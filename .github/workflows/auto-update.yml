@@ -1,0 +1,124 @@
+name: Brave Origin Auto-Update
+
+on:
+  schedule:
+    - cron: "0 8 * * *" # runs every day at 08:00 UTC
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  # 1. Update the Manifest File
+  update-manifest:
+    runs-on: ubuntu-latest
+    outputs:
+      changes_detected: ${{ steps.check.outputs.changes_detected }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Run update script
+        run: bash ./grab_latest.sh
+        
+      - name: Check and Commit
+        id: check
+        run: |
+          git config --global user.name "brave-bot"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          if [[ -n $(git status -s io.github.shyvortex.BraveOrigin.yaml) ]]; then
+            echo "changes_detected=true" >> "$GITHUB_OUTPUT"
+            VERSION=$(grep -m1 'version:' version.txt | awk '{print $2}')
+            git add io.github.shyvortex.BraveOrigin.yaml io.github.shyvortex.BraveOrigin.metainfo.xml version.txt
+            git commit -m "update: brave-origin $VERSION"
+            git push origin HEAD:main
+          else
+            echo "changes_detected=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  # 2. Build the Flatpaks
+  build-flatpak:
+    needs: update-manifest
+    if: needs.update-manifest.outputs.changes_detected == 'true'
+    strategy:
+      matrix:
+        include:
+          - flatpak_arch: x86_64
+            file_arch: x86_64
+            runner: ubuntu-latest
+          - flatpak_arch: aarch64
+            file_arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Mark safe directory
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Install Flatpak Builder
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak flatpak-builder
+
+      - name: Setup Flathub
+        run: flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+
+      - name: Build and Bundle
+        run: |
+          VERSION=$(grep -m1 'version:' version.txt | awk '{print $2}')
+          flatpak-builder --arch=${{ matrix.flatpak_arch }} --user --repo=repo --force-clean --install-deps-from=flathub build-dir io.github.shyvortex.BraveOrigin.yaml
+          flatpak build-bundle --arch=${{ matrix.flatpak_arch }} repo "brave-origin-${VERSION}-${{ matrix.file_arch }}.flatpak" io.github.shyvortex.BraveOrigin
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: flatpak-${{ matrix.file_arch }}
+          path: "*.flatpak"
+
+  # 3. Create the Release
+  release:
+    needs: [update-manifest, build-flatpak]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Install GH CLI
+        run: |
+          curl -s https://api.github.com/repos/cli/cli/releases/latest \
+            | python3 -c "import sys, json; print([a['browser_download_url'] for a in json.load(sys.stdin)['assets'] if 'linux_amd64.tar.gz' in a['name']][0])" \
+            | xargs curl -L -o gh.tar.gz
+          tar -xzf gh.tar.gz
+          sudo install -Dm755 gh_*_linux_amd64/bin/gh /usr/local/bin/gh
+
+      - name: Create Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(grep -m1 'version:' version.txt | awk '{print $2}')
+          IS_PRERELEASE=$(grep -m1 'prerelease:' version.txt | awk '{print $2}')
+          FLAGS=""
+          if [[ "$IS_PRERELEASE" == "true" ]]; then FLAGS="--prerelease"; fi
+          
+          # Upload all downloaded flatpak artifacts
+          gh release create "$VERSION" \
+            artifacts/*.flatpak \
+            --target main \
+            --title "$VERSION" \
+            --notes "Automated update to Brave Origin version $VERSION" \
+            --generate-notes \
+            $FLAGS
