@@ -10,4 +10,4 @@ for proot in "etc/brave/policies" "etc/static/brave/policies"; do
   done
 done
 
-exec cobalt "$@" --no-default-browser-check
+exec cobalt --class=io.github.shyvortex.BraveOrigin "$@" --no-default-browser-check
