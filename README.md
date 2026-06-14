@@ -1,6 +1,6 @@
 # Brave Origin Flatpak
 
-This repository contains the [Flatpak](https://flatpak.org/) manifest for **Brave Origin**, a private, fast, and honest web browser based on Chromium.
+This repository contains the [Flatpak](https://flatpak.org/) manifest for **Brave Origin**, a minimalist, privacy-focused edition of the Brave web browser. Brave Origin is designed for users who want the core benefits of Brave (such as Brave Shields, tracker blocking, and Chromium security patches) without the optional integration of services like Brave Rewards, Wallet, Leo AI, and VPN.
 
 It wraps the official prebuilt binaries for Origin from the [Brave Browser Linux project](https://github.com/brave/brave-browser) into a partially sandboxed Flatpak environment,
 ensuring it runs consistently across different Linux distributions.
