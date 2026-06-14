@@ -1,4 +1,4 @@
-app-id: com.brave.Browser
+app-id: io.github.shyvortex.BraveOrigin
 runtime: org.freedesktop.Platform
 runtime-version: '25.08'
 sdk: org.freedesktop.Sdk
@@ -103,29 +103,29 @@ modules:
     build-commands:
       - mkdir -p /app/brave
       - bsdtar --no-same-owner -xf brave.zip -C /app/brave
-      - install -Dm 644 brave-browser.desktop /app/share/applications/com.brave.Browser.desktop
-      - install -Dm 644 brave_lion.svg /app/share/icons/hicolor/scalable/apps/com.brave.Browser.svg
+      - install -Dm 644 brave-origin-browser.desktop /app/share/applications/io.github.shyvortex.BraveOrigin.desktop
+      - install -Dm 644 brave_lion.svg /app/share/icons/hicolor/scalable/apps/io.github.shyvortex.BraveOrigin.svg
       - install -Dm 755 brave.sh /app/bin/brave
       - install -Dm 644 -t /app/etc cobalt.ini
-      - install -Dm 644 -t /app/share/metainfo com.brave.Browser.metainfo.xml
+      - install -Dm 644 -t /app/share/metainfo io.github.shyvortex.BraveOrigin.metainfo.xml
     sources:
       - type: file
-        url: https://github.com/brave/brave-browser/releases/download/v1.91.172/brave-browser-1.91.172-linux-amd64.zip
+        url: https://github.com/brave/brave-browser/releases/download/v1.91.1721.91.1721.91.172/brave-origin-1.91.172-linux-amd64.zip
         sha256: e90f1838e1d0e7bab775e3b07d6d13d01db743b15847436b725ec09616285a93
         dest-filename: brave.zip
         only-arches: [x86_64]
       - type: file
-        url: https://github.com/brave/brave-browser/releases/download/v1.91.172/brave-browser-1.91.172-linux-arm64.zip
+        url: https://github.com/brave/brave-browser/releases/download/v1.91.1721.91.1721.91.172/brave-origin-1.91.172-linux-arm64.zip
         sha256: ba1bd32c28d8c3badd20f2af5d28e330b6fd5c56ad9adaafb993c68184ed59d9
         dest-filename: brave.zip
         only-arches: [aarch64]
       - type: file
         path: cobalt.ini
       - type: file
-        path: com.brave.Browser.metainfo.xml
+        path: io.github.shyvortex.BraveOrigin.metainfo.xml
       - type: file
         path: brave_lion.svg
       - type: file
-        path: brave-browser.desktop
+        path: brave-origin-browser.desktop
       - type: file
         path: brave.sh
