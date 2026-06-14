@@ -62,6 +62,8 @@ finish-args:
   - --env=CHROME_VERSION_EXTRA=stable
   # For KDE proxy resolution (KDE5 only)
   - --filesystem=~/.config/kioslaverc
+  # Distribution EnvVar
+  - --env=CHROME_VERSION_EXTRA="Flatpak"
 modules:
   - name: dconf
     buildsystem: meson
