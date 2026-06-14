@@ -29,7 +29,7 @@ if [ -z "$LATEST_VERSION" ] || [ "$LATEST_VERSION" = "null" ]; then
 fi
 
 # Extract version from current brave-origin URL
-CURRENT_VERSION=$(grep -o 'brave-origin-[0-9.]*' "$MANIFEST_FILE" | head -1 | sed 's/brave-origin-//')
+CURRENT_VERSION=$(grep -o 'brave-origin-[0-9][0-9.]*' "$MANIFEST_FILE" | head -1 | sed 's/brave-origin-//')
 CURRENT_DATE=$(date '+%Y-%m-%d')
 
 printf "version: %s\nprerelease: %s\n" "$LATEST_VERSION" "$IS_PRERELEASE" > version.txt
