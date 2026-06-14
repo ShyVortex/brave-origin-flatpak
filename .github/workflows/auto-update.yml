@@ -35,7 +35,7 @@ jobs:
             VERSION=$(grep -m1 'version:' version.txt | awk '{print $2}')
             git add io.github.shyvortex.BraveOrigin.yaml io.github.shyvortex.BraveOrigin.metainfo.xml version.txt
             git commit -m "update: brave-origin $VERSION"
-            git push origin HEAD:main
+            git push origin HEAD:master
           else
             echo "changes_detected=false" >> "$GITHUB_OUTPUT"
           fi
@@ -57,7 +57,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: master
 
       - name: Mark safe directory
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
@@ -89,7 +89,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: master
 
       - name: Download Artifacts
         uses: actions/download-artifact@v4
@@ -117,7 +117,7 @@ jobs:
           # Upload all downloaded flatpak artifacts
           gh release create "$VERSION" \
             artifacts/*.flatpak \
-            --target main \
+            --target master \
             --title "$VERSION" \
             --notes "Automated update to Brave Origin version $VERSION" \
             --generate-notes \
