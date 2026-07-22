@@ -110,13 +110,13 @@ modules:
       - install -Dm 644 -t /app/share/metainfo io.github.shyvortex.BraveOrigin.metainfo.xml
     sources:
       - type: file
-        url: https://github.com/brave/brave-browser/releases/download/v1.92.141/brave-origin-1.92.141-linux-amd64.zip
-        sha256: 0876c1883d1339ffd45673e92790d48c787b4f339c2b6a29fabe651f7cc93547
+        url: https://github.com/brave/brave-browser/releases/download/v1.92.143/brave-origin-1.92.143-linux-amd64.zip
+        sha256: 09ab1ac8f6f7211d3cbb5e3bdaf4cc21c0172522b38b67917550516b3ecccebb
         dest-filename: brave.zip
         only-arches: [x86_64]
       - type: file
-        url: https://github.com/brave/brave-browser/releases/download/v1.92.141/brave-origin-1.92.141-linux-amd64.zip
-        sha256: 0876c1883d1339ffd45673e92790d48c787b4f339c2b6a29fabe651f7cc93547
+        url: https://github.com/brave/brave-browser/releases/download/v1.92.143/brave-origin-1.92.143-linux-amd64.zip
+        sha256: 09ab1ac8f6f7211d3cbb5e3bdaf4cc21c0172522b38b67917550516b3ecccebb
         dest-filename: brave.zip
         only-arches: [aarch64]
       - type: file
