@@ -4,6 +4,12 @@ on:
   schedule:
     - cron: "0 8 * * *" # runs every day at 08:00 UTC
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Upstream brave-browser tag/version to download. Leave empty for latest.'
+        required: false
+        default: ''
+        type: string
   push:
     branches: [master]
 
@@ -22,7 +28,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           
       - name: Run update script
-        run: bash ./grab_latest.sh
+        run: bash ./grab_latest.sh "${{ inputs.version }}"
         
       - name: Check and Commit
         id: check

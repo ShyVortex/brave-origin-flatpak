@@ -5,27 +5,51 @@ MANIFEST_FILE="io.github.shyvortex.BraveOrigin.yaml"
 METADATA_FILE="io.github.shyvortex.BraveOrigin.metainfo.xml"
 REPO_URL="https://github.com/brave/brave-browser/releases/download"
 
-if [ -f "fetch.config.yml" ]; then
-    ALLOW_PRERELEASE=$(grep 'allow-prerelease:' fetch.config.yml | head -1 | awk '{print $2}')
+SPECIFIED_VERSION="${1:-${TARGET_VERSION:-}}"
+
+if [ -n "$SPECIFIED_VERSION" ]; then
+    case "$SPECIFIED_VERSION" in
+        v*) TAG_NAME="$SPECIFIED_VERSION" ;;
+        *)  TAG_NAME="v$SPECIFIED_VERSION" ;;
+    esac
+    printf "   Fetching release %s from GitHub...\n" "$TAG_NAME"
+    RELEASE_DATA=$(curl -s "https://api.github.com/repos/brave/brave-browser/releases/tags/$TAG_NAME")
+    LATEST_VERSION=$(printf "%s" "$RELEASE_DATA" | jq -r '.tag_name // empty')
+    IS_PRERELEASE=$(printf "%s" "$RELEASE_DATA" | jq -r '.prerelease // empty')
+
+    if [ -z "$LATEST_VERSION" ] && [ "$TAG_NAME" != "$SPECIFIED_VERSION" ]; then
+        RELEASE_DATA=$(curl -s "https://api.github.com/repos/brave/brave-browser/releases/tags/$SPECIFIED_VERSION")
+        LATEST_VERSION=$(printf "%s" "$RELEASE_DATA" | jq -r '.tag_name // empty')
+        IS_PRERELEASE=$(printf "%s" "$RELEASE_DATA" | jq -r '.prerelease // empty')
+    fi
+
+    if [ -z "$LATEST_VERSION" ]; then
+        printf "   Error: Failed to fetch valid version tag '%s' from GitHub.\n" "$SPECIFIED_VERSION"
+        exit 1
+    fi
 else
-    ALLOW_PRERELEASE="false"
-fi
+    if [ -f "fetch.config.yml" ]; then
+        ALLOW_PRERELEASE=$(grep 'allow-prerelease:' fetch.config.yml | head -1 | awk '{print $2}')
+    else
+        ALLOW_PRERELEASE="false"
+    fi
 
-if [ "$ALLOW_PRERELEASE" = "true" ]; then
-    FILTER="true"
-else
-    FILTER=".name | contains(\"Release\")"
-fi
+    if [ "$ALLOW_PRERELEASE" = "true" ]; then
+        FILTER="true"
+    else
+        FILTER=".name | contains(\"Release\")"
+    fi
 
-printf "   Fetching releases from GitHub...\n"
-RELEASES_JSON=$(curl -s https://api.github.com/repos/brave/brave-browser/releases |
-    jq -c "[.[] | select(.tag_name != null and ($FILTER))] | sort_by(.created_at) | last")
-LATEST_VERSION=$(printf "%s" "$RELEASES_JSON" | jq -r '.tag_name')
-IS_PRERELEASE=$(printf "%s" "$RELEASES_JSON" | jq -r '.prerelease')
+    printf "   Fetching releases from GitHub...\n"
+    RELEASES_JSON=$(curl -s https://api.github.com/repos/brave/brave-browser/releases |
+        jq -c "[.[] | select(.tag_name != null and ($FILTER))] | sort_by(.created_at) | last")
+    LATEST_VERSION=$(printf "%s" "$RELEASES_JSON" | jq -r '.tag_name')
+    IS_PRERELEASE=$(printf "%s" "$RELEASES_JSON" | jq -r '.prerelease')
 
-if [ -z "$LATEST_VERSION" ] || [ "$LATEST_VERSION" = "null" ]; then
-    printf "   Error: Failed to fetch valid version tag from GitHub.\n"
-    exit 1
+    if [ -z "$LATEST_VERSION" ] || [ "$LATEST_VERSION" = "null" ]; then
+        printf "   Error: Failed to fetch valid version tag from GitHub.\n"
+        exit 1
+    fi
 fi
 
 # Extract version from current brave-origin URL
