@@ -1,2 +1,2 @@
-version: v1.96.59
+version: v1.96.60
 prerelease: true
